@@ -1,10 +1,14 @@
-To get the skeleton running, open a terminal and do the following:
-	1. enter the skeleton folder 'cd path/to/skeleton'
-	2. install all necessary packages 'pip install -r requirements.txt' (or use pip3)
-	3. export flask (Mac, Linux)'export FLASK_APP=app.py', (Windows)'set FLASK_APP=app.py'
+To get setup to work on the app:
 
-	4. run schema.sql using MySQL Workbench
-	5. open app.py using your favorite editor, change 'cs460' in 'app.config['MYSQL_DATABASE_PASSWORD'] = 'cs460'' to your MySQL root password. You need to keep the quotations around your root password
+SQL:
+1. To start: 'sudo /usr/local/mysql/support-files/mysql.server start' or 'brew services start mysql' (if installed from Homebrew)
+2. Type 'mysql -u root -h 127.0.0.1 -p' and then press enter. This runs the mysql program specifying -u (user) as the root, -h (host) as your local computer (127.0.0.1 is a hostname of your local machine), and -p (password).
 
-	6. back to the terminal, run the app 'python -m flask run' (or use python3)
-	7. open your browser, and open the local website 'localhost:5000'
+Flask: (make sure SQL is running)
+1. python3 -m flask run
+2. Open your favorite web browser, go to http://127.0.0.1:5000 
+
+Git:
+1. commit and push changes on seperate branches
+2. git checkout main 
+3. git merge (your branch) 
