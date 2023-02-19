@@ -37,7 +37,7 @@ CREATE TABLE Comments(
     user_id INT NOT NULL,
     picture_id INT NOT NULL,
     PRIMARY KEY (comment_id),
-    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE 
+    FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE, 
     FOREIGN KEY (picture_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE
 );
 
@@ -46,7 +46,7 @@ CREATE TABLE Likes(
     picture_id INT NOT NULL,
     PRIMARY KEY (picture_id, user_id),
     FOREIGN KEY (user_id) REFERENCES Users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (picture_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE,
+    FOREIGN KEY (picture_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Tags(
@@ -69,7 +69,7 @@ CREATE TABLE Friendship (
     CHECK (UID1 <> UID2),
     PRIMARY KEY(UID1, UID2),
     FOREIGN KEY (UID1) REFERENCES Users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (UID), REFERENCES USers(user_id) ON DELETE CASCADE,
+    FOREIGN KEY (UID) REFERENCES USers(user_id) ON DELETE CASCADE
 );
 
 CREATE ASSERTION Comment-Constraint CHECK (
