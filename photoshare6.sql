@@ -1,3 +1,6 @@
+CREATE DATABASE photoshare6;
+use photoshare6;
+
 CREATE TABLE Users (
     user_id INT NOT NULL AUTO_INCREMENT,
     gender VARCHAR(6),
@@ -56,27 +59,21 @@ CREATE TABLE Tags(
 );
 
 CREATE TABLE Tagged(
-    photo_id INT,
+    picture_id INT,
     tag_id INT,
-    PRIMARY KEY(photo_id, tag_id),
-    FOREIGN KEY (photo_id) REFERENCES Photos(photo_id),
+    PRIMARY KEY(picture_id, tag_id),
+    FOREIGN KEY (picture_id) REFERENCES Pictures(picture_id),
     FOREIGN KEY (tag_id) REFERENCES Tags(tag_id)
 );
 
-CREATE TABLE Friendship (
+CREATE TABLE Friendship(
     UID1 INT NOT NULL,
     UID2 INT NOT NULL,
     CHECK (UID1 <> UID2),
     PRIMARY KEY(UID1, UID2),
     FOREIGN KEY (UID1) REFERENCES Users(user_id) ON DELETE CASCADE,
-    FOREIGN KEY (UID) REFERENCES USers(user_id) ON DELETE CASCADE
+    FOREIGN KEY (UID2) REFERENCES Users(user_id) ON DELETE CASCADE
 );
 
-CREATE ASSERTION Comment-Constraint CHECK (
-    NOT EXISTS (
-        SELECT * 
-        FROM Comments C, Pictures P
-        WHERE C.picture_id = P.picture_id 
-        AND P.user_id = C.user_id
-    )
-);
+
+

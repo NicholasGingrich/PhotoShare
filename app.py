@@ -13,6 +13,8 @@ import flask
 from flask import Flask, Response, request, render_template, redirect, url_for
 from flaskext.mysql import MySQL
 import flask_login
+import mysql.connector
+from mysql.connector import errorcode
 
 #for image uploading
 import os, base64
@@ -24,7 +26,7 @@ app.secret_key = 'super secret string'  # Change this!
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'Monkeybinder007'
-app.config['MYSQL_DATABASE_DB'] = 'photoshare'
+app.config['MYSQL_DATABASE_DB'] = 'photoshare6'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
@@ -169,6 +171,44 @@ def isEmailUnique(email):
 	else:
 		return True
 #end login code
+
+@app.route('/friends', methods=['GET'])
+@flask_login.login_required
+def friends():
+	friends = list_friends()
+	return render_template('friends.html', data = friends, supress='True')
+
+def list_friends():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	cursor = conn.cursor()
+	cursor.execute("SELECT fname, lname, email FROM Users WHERE user_id IN (SELECT UID2 FROM Friendship WHERE UID1 = '{0}' UNION SELECT UID1 FROM Friendship WHERE UID2 = '{0}')".format(uid))
+	data = cursor.fetchall()
+	return data
+
+@app.route("/friends", methods=['POST'])
+@flask_login.login_required
+#function which allows you to add a friend
+def add_friend():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	try:
+		friend = request.form.get('addfriend')
+		cursor = conn.cursor()
+		cursor.execute("SELECT user_id from Users WHERE email = '{0}'".format(friend))
+		uid2 = cursor.fetchall()[0][0]
+		cursor.execute("INSERT INTO Friendship (UID1, UID2) VALUES ('{0}', '{1}')".format(uid, uid2))
+		conn.commit()
+		return render_template('friends.html', message='Friend Added!')
+	except mysql.connector.IntegrityError:
+		print("already friends")
+		return flask.redirect(flask.url_for('friends'))
+	except:
+		print("error adding friend") #this prints to shell, end users will not see this (all print statements go to shell)
+		return flask.redirect(flask.url_for('friends'))
+	
+
+	
+#end friends code
+
 
 @app.route('/profile')
 @flask_login.login_required

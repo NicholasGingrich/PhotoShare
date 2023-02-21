@@ -1,0 +1,25 @@
+<head>
+    <title>Friends</title>
+</head>
+<h2>Add Friends:</h2>
+<body>
+    <div id="add friends">
+        <form method="post" action="{{ url_for('add_friend') }}">
+            <label for="addfriend">Type in their email:</label>
+            <input type="addfriend" name="addfriend" /><br />
+            <input type="submit" />
+        </form>
+     </div>
+</body>
+<h2>Your Friends:</h2>
+    <div id="my_friends" action="{{ url_for('friends') }}" >
+        {% for item in data %}
+        <tr>
+            <td>{{item[0]}}</td>
+            <td>{{item[1]}}</td>
+            <td>{{item[2]}}</td>
+        </tr>
+        <br>
+        {% endfor %}
+    </div>
+<a href='/'>Home</a>
