@@ -235,7 +235,27 @@ def upload_file():
 		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid), base64=base64)
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
-		return render_template('upload.html')
+		albums = list_albums()
+		return render_template('upload.html', data = albums, supress='True')
+
+def list_albums():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	cursor = conn.cursor()
+	cursor.execute("SELECT Name FROM Albums WHERE Albums.user_id = '{0}'".format(uid))
+	albumList = cursor.fetchall()
+	return albumList
+
+@app.route('/upload', methods=['POST'])
+@flask_login.login_required
+def create_album():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	name = request.form.get('albumName')
+	if name == "" or name is None:
+		return "Error with album name"
+	cursor = conn.cursor()
+	cursor.execute("INSERT INTO Albums (user_id, Name) VALUES ('{0}', '{1}')".format(uid, name))
+	conn.commit()
+	return render_template('upload.html')
 #end photo uploading code
 
 
