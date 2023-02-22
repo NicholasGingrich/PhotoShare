@@ -228,9 +228,14 @@ def upload_file():
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		imgfile = request.files['photo']
 		caption = request.form.get('caption')
+		album = request.form.get("album")
+		cursor = conn.cursor()
+		print(album)
+		cursor.execute("SELECT album_id FROM Albums WHERE Albums.Name = '{0}'".format(album))
+		aid = cursor.fetchall()[0][0]
 		photo_data =imgfile.read()
 		cursor = conn.cursor()
-		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption) VALUES (%s, %s, %s )''', (photo_data, uid, caption))
+		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption, album_id) VALUES (%s, %s, %s, %s)''', (photo_data, uid, caption, aid))
 		conn.commit()
 		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid), base64=base64)
 	#The method is GET so we return a  HTML form to upload the a photo.
@@ -245,18 +250,33 @@ def list_albums():
 	albumList = cursor.fetchall()
 	return albumList
 
-@app.route('/upload', methods=['POST'])
+#end photo uploading code
+
+
+@app.route('/albums', methods=['GET'])
+@flask_login.login_required
+def albums():
+	return render_template('albums.html', supress='True')
+
+@app.route('/albums', methods=['POST'])
 @flask_login.login_required
 def create_album():
 	uid = getUserIdFromEmail(flask_login.current_user.id)
-	name = request.form.get('albumName')
-	if name == "" or name is None:
-		return "Error with album name"
-	cursor = conn.cursor()
-	cursor.execute("INSERT INTO Albums (user_id, Name) VALUES ('{0}', '{1}')".format(uid, name))
-	conn.commit()
-	return render_template('upload.html')
-#end photo uploading code
+	try:
+		name = request.form.get('albumName')
+		if name == "" or name is None:
+			return "Error with album name"
+		cursor = conn.cursor()
+		cursor.execute("INSERT INTO Albums (user_id, Name) VALUES ('{0}', '{1}')".format(uid, name))
+		conn.commit()
+		return render_template('albums.html', message="Album '{0}' Created!".format(name))
+	except mysql.connector.IntegrityError:
+		print("Album name already exists!")
+		return flask.redirect(flask.url_four('albums'))
+	except:
+		print("Error creating new album!")
+		return flask.redirect(flask.url_four('albums'))
+#end album creation code
 
 
 #default page

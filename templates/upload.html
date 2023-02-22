@@ -12,14 +12,14 @@
                 <label for="caption">Please caption:</label>
                 <input type="text" name="caption" required='true' /><br />
         
-                <div id="my_albums" action="{{ url_for('upload_file') }}" >
-                    <label for="album"> Choose an album: </label>
-                    <select name="album" id="album"></select>
+                <label for="album"> Choose an album: </label>
+                <select name="album" id="album">
                     {% for item in data %}
-                        <option value = item> item[0]</option>
+                        <option value = {{item[0]}}> {{item[0]}} </option>
                     {% endfor %}
-                </div>
-                <label for="album"> OR new album name: </label> <input type="text" name="albumName" required='false' /> <button name="createAlbum" onclick="create_album()">Create Album</button>
+                </select>
+                <br>
+                <label for="album"> OR create a new album: </label>  <button name="createAlbum" onclick="window.location.href='/albums'">Create Album</button>
                 <br>
                 <br>
                 <input type="submit" value="Upload" />
