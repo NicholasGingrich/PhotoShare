@@ -2,11 +2,25 @@
     <title>Create a new photo album:</title>
 </head>
     <body>
-        <div id="create album">
-            <form method="post" action="{{ url_for('create_album') }}">
-                <label for="albumName">Name of your new album:</label>
-                <input type="albumName" name="albumName" /><br />
-                <input type="submit" />
+            <form method="post" action="{{ url_for('manage_albums') }}">
+                <div id="create album">
+                    <h2> Create a new album:</h2>
+                    
+                        <label for="albumName">Name of your new album:</label>
+                        <input type="albumName" name="albumName" /><br />
+                        <input type="submit" name="btn" value="Create">
+                </div>
+                <div id="delete album">
+                    <h2> Delete an album:</h2>
+                        <label for="deleteAlbum"> Choose an album: </label>
+                        <select name="deleteAlbum">
+                            {% for item in data %}
+                                <option value = {{item[0]}}> {{item[0]}} </option>
+                            {% endfor %}
+                        </select>
+                        <br>
+                        <input type="submit" name="btn" value="Delete">
+                </div>
             </form>
         </div>
         <br>

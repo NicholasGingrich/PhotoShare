@@ -1,0 +1,19 @@
+<body>
+    <h1>My Photos:</h1>
+    {% if photos %}
+        <ul>
+        {% for photo in photos %}
+            <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/> 
+            <form action="{{ url_for('delete_photo', photo_id = photo[1]) }}" method=post>
+                <input type=submit value=Delete>
+            </form>
+            <br>
+            <b> Caption: </b> {{photo[2]}} </li> 
+        {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+<ul>
+    <li><a href='/upload'>Upload a photo</a> </li>
+    <li><a href='/'>Home</a></li>
+</ul>

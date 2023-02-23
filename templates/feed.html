@@ -1,0 +1,26 @@
+<body>
+    <h1>See what others are posting:</h1>
+    {% if photos %}
+        <form method="post" action="{{ url_for('filter_by_album') }}">
+            <label for="filterAlbum"> Filter by Album: </label>
+            <select name="filterAlbum">
+                {% for item in data %}
+                    <option value = {{item[0]}}> {{item[0]}} </option>
+                {% endfor %}
+            </select>
+            <input type=submit value=Filter>
+        </form>
+            <ul>
+            {% for photo in photos %}
+                <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/> 
+                <br>
+                <b> Caption: </b> {{photo[2]}} </li> 
+            {% endfor %}
+            </ul>
+    {% endif %}
+</body>
+
+<ul>
+    <li><a href='/upload'>Upload a photo</a> </li>
+    <li><a href='/'>Home</a></li>
+</ul>

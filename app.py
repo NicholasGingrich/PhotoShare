@@ -109,7 +109,7 @@ def login():
 @app.route('/logout')
 def logout():
 	flask_login.logout_user()
-	return render_template('hello.html', message='Logged out')
+	return render_template('home.html', message='Logged out')
 
 @login_manager.unauthorized_handler
 def unauthorized_handler():
@@ -142,7 +142,7 @@ def register_user():
 		user = User()
 		user.id = email
 		flask_login.login_user(user)
-		return render_template('hello.html', name=email, message='Account Created!')
+		return render_template('home.html', name=email, message='Account Created!')
 	else:
 		print("couldn't find all tokens")
 		return flask.redirect(flask.url_for('register'))
@@ -185,7 +185,7 @@ def list_friends():
 	data = cursor.fetchall()
 	return data
 
-@app.route("/friends", methods=['POST'])
+@app.route("/friends", methods=['GET', 'POST'])
 @flask_login.login_required
 #function which allows you to add a friend
 def add_friend():
@@ -204,16 +204,47 @@ def add_friend():
 	except:
 		print("error adding friend") #this prints to shell, end users will not see this (all print statements go to shell)
 		return flask.redirect(flask.url_for('friends'))
-	
-
-	
 #end friends code
+
+@app.route('/feed')
+def feed():
+	photos = feed_photos()
+	filter_albums = list_albums_public()
+	return render_template('feed.html', data = filter_albums, photos = photos, base64 = base64)
+
+@app.route("/feed", methods=['GET'])
+def feed_photos():
+	cursor = conn.cursor()
+	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures ORDER BY picture_id DESC")
+	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+
+def list_albums_public():
+	cursor = conn.cursor()
+	cursor.execute("SELECT Name FROM Albums")
+	albumList = cursor.fetchall()
+	return albumList
+
+@app.route("/feed", methods=['POST'])
+def filter_by_album():
+	album = request.form.get('filterAlbum')
+	cursor = conn.cursor()
+	cursor.execute("SELECT album_id FROM Albums WHERE Albums.Name = '{0}'".format(album))
+	aid = cursor.fetchall()[0][0]
+
+	cursor = conn.cursor()
+	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE Pictures.album_id = '{0}'".format(aid))
+	filtered_photos = cursor.fetchall()
+
+	filter_albums = list_albums_public()
+
+	return render_template('feed.html', data = filter_albums, photos = filtered_photos, base64 = base64)
+#end feed code
 
 
 @app.route('/profile')
 @flask_login.login_required
 def protected():
-	return render_template('hello.html', name=flask_login.current_user.id, message="Here's your profile")
+	return render_template('home.html', name=flask_login.current_user.id, message="Here's your profile")
 
 #begin photo uploading code
 # photos uploaded using base64 encoding so they can be directly embeded in HTML
@@ -230,14 +261,13 @@ def upload_file():
 		caption = request.form.get('caption')
 		album = request.form.get("album")
 		cursor = conn.cursor()
-		print(album)
 		cursor.execute("SELECT album_id FROM Albums WHERE Albums.Name = '{0}'".format(album))
 		aid = cursor.fetchall()[0][0]
 		photo_data =imgfile.read()
 		cursor = conn.cursor()
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption, album_id) VALUES (%s, %s, %s, %s)''', (photo_data, uid, caption, aid))
 		conn.commit()
-		return render_template('hello.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid), base64=base64)
+		return render_template('photos.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid), base64=base64)
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
 		albums = list_albums()
@@ -253,36 +283,77 @@ def list_albums():
 #end photo uploading code
 
 
+@app.route('/photos', methods=['GET'])
+@flask_login.login_required
+def photos(): 
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	photos = getUsersPhotos(uid)
+	return render_template('photos.html', photos = photos, supress='True', base64=base64)
+
+@app.route('/photos/<photo_id>', methods=['POST'])
+@flask_login.login_required
+def delete_photo(photo_id): 
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	cursor = conn.cursor()
+	cursor.execute("DELETE FROM Pictures WHERE picture_id= '{0}'".format(photo_id))
+	conn.commit()
+	return render_template('photos.html', photos = getUsersPhotos(uid), supress='True')
+#end photo code
+
+
+
 @app.route('/albums', methods=['GET'])
 @flask_login.login_required
 def albums():
-	return render_template('albums.html', supress='True')
+	albums = list_albums()
+	return render_template('albums.html', data = albums, supress='True')
 
 @app.route('/albums', methods=['POST'])
 @flask_login.login_required
-def create_album():
-	uid = getUserIdFromEmail(flask_login.current_user.id)
-	try:
-		name = request.form.get('albumName')
-		if name == "" or name is None:
-			return "Error with album name"
-		cursor = conn.cursor()
-		cursor.execute("INSERT INTO Albums (user_id, Name) VALUES ('{0}', '{1}')".format(uid, name))
-		conn.commit()
-		return render_template('albums.html', message="Album '{0}' Created!".format(name))
-	except mysql.connector.IntegrityError:
-		print("Album name already exists!")
-		return flask.redirect(flask.url_four('albums'))
-	except:
-		print("Error creating new album!")
-		return flask.redirect(flask.url_four('albums'))
-#end album creation code
-
+def manage_albums():
+	print(request.form["btn"])
+	if request.form["btn"] == "Create":
+		uid = getUserIdFromEmail(flask_login.current_user.id)
+		try:
+			name = request.form.get('albumName')
+			if name == "" or name is None:
+				return "Error with album name"
+			cursor = conn.cursor()
+			cursor.execute("INSERT INTO Albums (user_id, Name) VALUES ('{0}', '{1}')".format(uid, name))
+			conn.commit()
+			return render_template('albums.html', message="Album '{0}' Created!".format(name))
+		except mysql.connector.IntegrityError:
+			print("Album name already exists!")
+			return flask.redirect(flask.url_four('albums'))
+		except:
+			print("Error creating new album!")
+			return flask.redirect(flask.url_four('albums'))
+	elif request.form["btn"] == "Delete":
+		try:
+			name = request.form.get("deleteAlbum")
+			if name == "":
+				return "Error: Name is empty"
+			if name is None:
+				return "Error: Name is None"
+			cursor = conn.cursor()
+			cursor.execute("SELECT album_id FROM Albums WHERE Albums.Name = '{0}'".format(name))
+			aid = cursor.fetchall()[0][0]
+			cursor = conn.cursor()
+			cursor.execute("DELETE FROM Pictures WHERE Pictures.album_id = '{0}'".format(aid))
+			conn.commit()
+			cursor = conn.cursor()
+			cursor.execute("DELETE FROM Albums WHERE Albums.album_id = '{0}'".format(aid))
+			conn.commit()
+			return render_template('albums.html', message="Album '{0}' Deleted!".format(name))
+		except:
+			print("Error deleting album!")
+			return flask.redirect(flask.url_four('albums'))
+#end album code
 
 #default page
 @app.route("/", methods=['GET'])
-def hello():
-	return render_template('hello.html', message='Welecome to Photoshare')
+def home():
+	return render_template('home.html', message='Welecome to Photoshare')
 
 
 if __name__ == "__main__":
