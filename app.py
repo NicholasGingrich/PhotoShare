@@ -15,6 +15,7 @@ from flaskext.mysql import MySQL
 import flask_login
 import mysql.connector
 from mysql.connector import errorcode
+from collections import defaultdict
 
 #for image uploading
 import os, base64
@@ -386,6 +387,42 @@ def manage_albums():
 			print("Error deleting album!")
 			return flask.redirect(flask.url_four('albums'))
 #end album code
+
+@app.route('/recommendations', methods=['GET'])
+@flask_login.login_required
+def recommendations():
+	friend_recs = recommended_friends()
+	return render_template('recommendations.html', data = friend_recs, supress='True')
+
+
+def recommended_friends():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	user_friends = list_friends() #returns a list of tuples (fname, lname, email)
+	user_friends_list =  []
+	# this loop returns a list of tuples where each tuple contains the user id of the users friends
+	for friend in user_friends:
+		cursor = conn.cursor()
+		cursor.execute("SELECT user_id FROM Users WHERE Users.email = '{0}'".format(friend[2]))
+		user_friends_list.append(cursor.fetchall()[0]) 
+	# grab each friend of all the friends and add their user_id to a list
+	recommendation_list = []
+	for friend_uid in user_friends_list:
+		cursor = conn.cursor()
+		cursor.execute("SELECT fname, lname, email FROM Users WHERE user_id IN (SELECT UID2 FROM Friendship WHERE UID1 = '{0}' AND UID2 <> '{1}' UNION SELECT UID1 FROM Friendship WHERE UID2 = '{0}'  AND UID1 <> '{1}')".format(friend_uid[0], uid))
+		recommendation_list += (cursor.fetchall())
+	recommendation_dict = defaultdict(int)
+	for friend_tuple in recommendation_list:
+		recommendation_dict[friend_tuple]+=1
+	sorted_dict = sorted(recommendation_dict.items(), key=lambda x:x[1], reverse=True)
+	final_with_duplicates = []
+	for tup in sorted_dict:
+		final_with_duplicates.append(tup[0])
+	final_list = []
+	for friend in final_with_duplicates:
+		if friend not in user_friends:
+			final_list.append(friend)
+	return final_list
+#end recommendations code
 
 #default page
 @app.route("/", methods=['GET'])
