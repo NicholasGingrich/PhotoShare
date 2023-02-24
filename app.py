@@ -216,7 +216,15 @@ def feed():
 def feed_photos():
 	cursor = conn.cursor()
 	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures ORDER BY picture_id DESC")
-	return cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+	photo_info = cursor.fetchall() #NOTE return a list of tuples, [(imgdata, pid, caption), ...]
+	completed_tuples = []
+	for tup in photo_info:
+		cursor = conn.cursor()
+		cursor.execute("SELECT COUNT(user_id) FROM Likes WHERE Likes.picture_id = '{0}'".format(tup[1]))
+		likes = cursor.fetchall()[0][0]
+		likers = list_likers(tup[1])
+		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers))
+	return completed_tuples
 
 def list_albums_public():
 	cursor = conn.cursor()
@@ -238,6 +246,35 @@ def filter_by_album():
 	filter_albums = list_albums_public()
 
 	return render_template('feed.html', data = filter_albums, photos = filtered_photos, base64 = base64)
+
+@app.route("/feed/<photo_id>", methods=['GET', 'POST'])
+@flask_login.login_required
+def like_photo(photo_id):
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+
+	cursor = conn.cursor()
+	cursor.execute("SELECT * FROM Likes WHERE Likes.user_id = '{0}' AND Likes.picture_id = '{1}'".format(uid, photo_id))
+	like_status = cursor.fetchall()
+	if len(like_status) == 0:
+		cursor = conn.cursor()
+		cursor.execute("INSERT INTO Likes (user_id, picture_id) VALUES ('{0}', '{1}')".format(uid, photo_id))
+		conn.commit()
+	else:
+		cursor = conn.cursor()
+		cursor.execute("DELETE FROM Likes WHERE Likes.user_id = '{0}' AND Likes.picture_id = '{1}'".format(uid, photo_id))
+		conn.commit()
+
+
+	photos = feed_photos()
+	filter_albums = list_albums_public()
+	return render_template('feed.html', data = filter_albums, photos = photos, base64 = base64)
+
+
+def list_likers(pid):
+	cursor = conn.cursor()
+	cursor.execute("SELECT fname, lname, email FROM Likes JOIN Users ON Likes.user_id = Users.user_id WHERE Likes.picture_id = '{0}'".format(pid))
+	likers = cursor.fetchall()
+	return likers
 #end feed code
 
 

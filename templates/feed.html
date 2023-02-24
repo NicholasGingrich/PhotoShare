@@ -1,4 +1,5 @@
 <body>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
     <h1>See what others are posting:</h1>
     {% if photos %}
         <form method="post" action="{{ url_for('filter_by_album') }}">
@@ -12,7 +13,16 @@
         </form>
             <ul>
             {% for photo in photos %}
-                <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/> 
+                <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/>  
+                <br>
+                    <a href={{url_for('like_photo', photo_id = photo[1]) }}> Likes: {{photo[3]}}</a>
+                <br>
+                    <label for="viewLikes"> See who liked this photo: </label>
+                    <select name="viewLikes">
+                        {% for item in photo[4] %}
+                            <option value = {{item}}> {{item[0]}} {{item[1]}}, {{item[2]}}  </option>
+                        {% endfor %}
+                    </select>
                 <br>
                 <b> Caption: </b> {{photo[2]}} </li> 
             {% endfor %}
