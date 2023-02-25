@@ -25,6 +25,10 @@
                     </select>
                 <br>
                 <b> Caption: </b> {{photo[2]}} </li> 
+                <br>
+                <b> Comments: </b>
+                <br>
+                <input type="text" name="comment" /> <a href={{url_for('add_comment', photo_id = photo[1], comment_text = comment) }}> Comment</a>
             {% endfor %}
             </ul>
     {% endif %}

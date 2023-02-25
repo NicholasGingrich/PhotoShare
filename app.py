@@ -207,6 +207,8 @@ def add_friend():
 		return flask.redirect(flask.url_for('friends'))
 #end friends code
 
+
+
 @app.route('/feed')
 def feed():
 	photos = feed_photos()
@@ -224,7 +226,11 @@ def feed_photos():
 		cursor.execute("SELECT COUNT(user_id) FROM Likes WHERE Likes.picture_id = '{0}'".format(tup[1]))
 		likes = cursor.fetchall()[0][0]
 		likers = list_likers(tup[1])
-		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers))
+		cursor = conn.cursor()
+		cursor.execute("SELECT email, text FROM Comments INNER JOIN Users ON Users.user_id = Comments.user_id WHERE Comments.picture_id = '{0}'".format(tup[1]))
+		comments = cursor.fetchall()
+		print(comments)
+		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments))
 	return completed_tuples
 
 def list_albums_public():
@@ -423,6 +429,23 @@ def recommended_friends():
 			final_list.append(friend)
 	return final_list
 #end recommendations code
+
+@app.route('/feed/<photo_id><comment_text>', methods=['GET', 'POST'])
+@flask_login.login_required
+def add_comment(photo_id, comment_text):
+	print("test")
+	print(photo_id)
+	print(comment_text)
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	cursor = conn.cursor()
+	cursor.execute("INSERT INTO Comments (text, user_id, picture_id) VALUES '{0}', '{1}', '{2}'".format(comment_text, uid, photo_id))
+	conn.commit()
+
+	photos = feed_photos()
+	filter_albums = list_albums_public()
+	return render_template('feed.html', data = filter_albums, photos = photos, base64 = base64)
+
+#end comments code
 
 #default page
 @app.route("/", methods=['GET'])
