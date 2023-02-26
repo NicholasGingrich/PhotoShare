@@ -26,7 +26,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'Monkeybinder007'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'b0st0nuniv2023'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare6'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -229,7 +229,6 @@ def feed_photos():
 		cursor = conn.cursor()
 		cursor.execute("SELECT email, text FROM Comments INNER JOIN Users ON Users.user_id = Comments.user_id WHERE Comments.picture_id = '{0}'".format(tup[1]))
 		comments = cursor.fetchall()
-		print(comments)
 		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments))
 	return completed_tuples
 
@@ -355,7 +354,6 @@ def albums():
 @app.route('/albums', methods=['POST'])
 @flask_login.login_required
 def manage_albums():
-	print(request.form["btn"])
 	if request.form["btn"] == "Create":
 		uid = getUserIdFromEmail(flask_login.current_user.id)
 		try:
@@ -430,20 +428,31 @@ def recommended_friends():
 	return final_list
 #end recommendations code
 
-@app.route('/feed/<photo_id><comment_text>', methods=['GET', 'POST'])
+@app.route('/add_comment/<photo_id>', methods=['POST'])
 @flask_login.login_required
-def add_comment(photo_id, comment_text):
-	print("test")
-	print(photo_id)
-	print(comment_text)
+def add_comment(photo_id):
+	comment_text = request.form.get("comment")
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	cursor = conn.cursor()
-	cursor.execute("INSERT INTO Comments (text, user_id, picture_id) VALUES '{0}', '{1}', '{2}'".format(comment_text, uid, photo_id))
+	cursor.execute("INSERT INTO Comments (text, user_id, picture_id) VALUES ('{0}', '{1}', '{2}')".format(comment_text, uid, photo_id))
 	conn.commit()
 
 	photos = feed_photos()
 	filter_albums = list_albums_public()
 	return render_template('feed.html', data = filter_albums, photos = photos, base64 = base64)
+
+@app.route('/search_comments', methods=["POST"])
+@flask_login.login_required
+def search_comments():
+	comment_text = request.form.get("comment_text")
+
+	#get all user_id who have added a comment that matches the commetn_text
+	cursor = conn.cursor()
+	cursor.execute("SELECT fname, lname, email FROM Comments JOIN Users on Comments.user_id = Users.user_id WHERE Comments.text = '{0}'".format(comment_text))
+
+	photos = feed_photos()
+	filter_albums = list_albums_public()
+	return render_template('feed.html', data = filter_albums, photos = photos, comment_search = cursor.fetchall(), comm_text = comment_text, base64 = base64)
 
 #end comments code
 

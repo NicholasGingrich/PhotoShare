@@ -28,10 +28,40 @@
                 <br>
                 <b> Comments: </b>
                 <br>
-                <input type="text" name="comment" /> <a href={{url_for('add_comment', photo_id = photo[1], comment_text = comment) }}> Comment</a>
+                <form method="post" action="{{ url_for('add_comment', photo_id = photo[1]) }}">
+                    <input type="text" name="comment" />
+                    <button type="submit">Add Comment</button>
+                    <!--<a href={{url_for('add_comment', photo_id = photo[1], comment_text = comment) }}> Comment</a> -->
+                </form>
+                <br>
+                <ul>
+                    {% for comment in photo[5] %}
+                        <li><b>{{comment[0]}}:</b> {{comment[1]}}</li>
+                        <br>
+                    {% endfor %}
+                </ul>
             {% endfor %}
             </ul>
     {% endif %}
+    <br>
+    <br>
+    <form method="post" action="{{ url_for('search_comments') }}">
+        <label for="search_comments">Search for Users by comment:</label>
+        <input type="text" name="comment_text" />
+        <button type="submit">Submit</button>
+    </form>
+
+    {% if comment_search %}
+        
+        <h4>Displaying results for '{{comm_text}}':</h4>
+        
+        <ul>
+        {% for user in comment_search %}
+            <li>{{user[0]}} {{user[1]}}, {{user[2]}}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+
 </body>
 
 <ul>
