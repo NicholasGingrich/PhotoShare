@@ -8,6 +8,15 @@
   <h1>Hello {{ name }}!</h1>
 {% endif %}
 
+{% if top_users %}
+  <h4>Here are todays top users</h4>
+  <ul>
+    {% for user in top_users %}
+      <li><b>{{user[0]}} {{user[1]}}</b>, <b>Score: </b>{{user[2]}}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
 {% if message is none %}
   <p>You should <a href='/login'>login!</a></p>
 {% else %}

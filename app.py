@@ -287,7 +287,8 @@ def list_likers(pid):
 @app.route('/profile')
 @flask_login.login_required
 def protected():
-	return render_template('home.html', name=flask_login.current_user.id, message="Here's your profile")
+	top_user_list = get_top_ten_users()
+	return render_template('home.html', name=flask_login.current_user.id, message="Here's your profile", top_users = top_user_list)
 
 #begin photo uploading code
 # photos uploaded using base64 encoding so they can be directly embeded in HTML
@@ -303,6 +304,7 @@ def upload_file():
 		imgfile = request.files['photo']
 		caption = request.form.get('caption')
 		album = request.form.get("album")
+		print("album: " + album)
 		cursor = conn.cursor()
 		cursor.execute("SELECT album_id FROM Albums WHERE Albums.Name = '{0}'".format(album))
 		aid = cursor.fetchall()[0][0]
@@ -456,10 +458,28 @@ def search_comments():
 
 #end comments code
 
+# begin code for getting the top users to display on the home page
+
+def get_top_ten_users():
+	cursor = conn.cursor()
+	cursor.execute('''SELECT Users.fname, Users.lname, 
+    COUNT(DISTINCT Pictures.picture_id) + 
+    (SELECT COUNT(*) FROM Comments 
+     WHERE user_id = Users.user_id AND picture_id NOT IN 
+         (SELECT picture_id FROM Pictures WHERE user_id = Users.user_id)) 
+		AS user_score
+	FROM Users
+	LEFT JOIN Pictures ON Users.user_id = Pictures.user_id
+	GROUP BY Users.user_id
+	ORDER BY user_score DESC;
+	''')
+	return cursor.fetchall()
+
 #default page
 @app.route("/", methods=['GET'])
 def home():
-	return render_template('home.html', message='Welecome to Photoshare')
+	top_user_list = get_top_ten_users()
+	return render_template('home.html', message='Welecome to Photoshare', top_users = top_user_list)
 
 
 if __name__ == "__main__":

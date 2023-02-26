@@ -15,7 +15,7 @@
             {% for photo in photos %}
                 <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/>  
                 <br>
-                    <a href={{url_for('like_photo', photo_id = photo[1]) }}> Likes: {{photo[3]}}</a>
+                    <a href={{url_for('like_photo', photo_id = photo[1]) }} style="text-decoration:none"> Likes: {{photo[3]}}</a>
                 <br>
                     <label for="viewLikes"> See who liked this photo: </label>
                     <select name="viewLikes">
