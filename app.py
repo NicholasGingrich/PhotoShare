@@ -224,6 +224,9 @@ def feed_photos():
 	completed_tuples = []
 	for tup in photo_info:
 		cursor = conn.cursor()
+		cursor.execute("SELECT fname, lname FROM Users INNER JOIN Pictures ON Pictures.user_id = Users.user_id WHERE Pictures.picture_id = '{0}'".format(tup[1]))
+		poster = cursor.fetchall()[0]
+		cursor = conn.cursor()
 		cursor.execute("SELECT COUNT(user_id) FROM Likes WHERE Likes.picture_id = '{0}'".format(tup[1]))
 		likes = cursor.fetchall()[0][0]
 		likers = list_likers(tup[1])
@@ -233,7 +236,7 @@ def feed_photos():
 		cursor = conn.cursor()
 		cursor.execute("SELECT name FROM Tags JOIN Tagged ON Tags.tag_id = Tagged.tag_id WHERE picture_id = '{0}' ".format(tup[1]))
 		tags = cursor.fetchall()
-		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags))
+		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags, poster))
 	return completed_tuples
 
 def list_albums_public():
@@ -258,6 +261,9 @@ def filter_by_album():
 	completed_tuples = []
 	for tup in filtered_photos:
 		cursor = conn.cursor()
+		cursor.execute("SELECT fname, lname FROM Users INNER JOIN Pictures ON Pictures.user_id = Users.user_id WHERE Pictures.picture_id = '{0}'".format(tup[1]))
+		poster = cursor.fetchall()[0]
+		cursor = conn.cursor()
 		cursor.execute("SELECT COUNT(user_id) FROM Likes WHERE Likes.picture_id = '{0}'".format(tup[1]))
 		likes = cursor.fetchall()[0][0]
 		likers = list_likers(tup[1])
@@ -267,7 +273,7 @@ def filter_by_album():
 		cursor = conn.cursor()
 		cursor.execute("SELECT name FROM Tags JOIN Tagged ON Tags.tag_id = Tagged.tag_id WHERE picture_id = '{0}' ".format(tup[1]))
 		tags = cursor.fetchall()
-		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags))
+		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags, poster))
 
 
 	return render_template('feed.html', data = filter_albums, photos = completed_tuples, base64 = base64)
@@ -288,6 +294,9 @@ def filter_by_tag():
 	completed_tuples = []
 	for tup in filtered_photos:
 		cursor = conn.cursor()
+		cursor.execute("SELECT fname, lname FROM Users INNER JOIN Pictures ON Pictures.user_id = Users.user_id WHERE Pictures.picture_id = '{0}'".format(tup[1]))
+		poster = cursor.fetchall()[0]
+		cursor = conn.cursor()
 		cursor.execute("SELECT COUNT(user_id) FROM Likes WHERE Likes.picture_id = '{0}'".format(tup[1]))
 		likes = cursor.fetchall()[0][0]
 		likers = list_likers(tup[1])
@@ -297,7 +306,7 @@ def filter_by_tag():
 		cursor = conn.cursor()
 		cursor.execute("SELECT name FROM Tags JOIN Tagged ON Tags.tag_id = Tagged.tag_id WHERE picture_id = '{0}' ".format(tup[1]))
 		tags = cursor.fetchall()
-		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags))
+		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags, poster))
 
 	return render_template('feed.html', tags = filter_tags, photos = completed_tuples, base64=base64)
 
@@ -366,6 +375,9 @@ def search_by_tags():
 	completed_tuples = []
 	for tup in filtered_photos:
 		cursor = conn.cursor()
+		cursor.execute("SELECT fname, lname FROM Users INNER JOIN Pictures ON Pictures.user_id = Users.user_id WHERE Pictures.picture_id = '{0}'".format(tup[1]))
+		poster = cursor.fetchall()[0]
+		cursor = conn.cursor()
 		cursor.execute("SELECT COUNT(user_id) FROM Likes WHERE Likes.picture_id = '{0}'".format(tup[1]))
 		likes = cursor.fetchall()[0][0]
 		likers = list_likers(tup[1])
@@ -375,7 +387,7 @@ def search_by_tags():
 		cursor = conn.cursor()
 		cursor.execute("SELECT name FROM Tags JOIN Tagged ON Tags.tag_id = Tagged.tag_id WHERE picture_id = '{0}' ".format(tup[1]))
 		tags = cursor.fetchall()
-		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags))
+		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags, poster))
 
 	return render_template('feed.html', data = filter_albums, tags = filter_tags, photos = completed_tuples, base64 = base64)
 
@@ -418,7 +430,8 @@ def list_likers(pid):
 @flask_login.login_required
 def protected():
 	top_user_list = get_top_ten_users()
-	return render_template('home.html', name=flask_login.current_user.id, message="Here's your profile", top_users = top_user_list)
+	top_tag_list = get_top_three_tags()
+	return render_template('home.html', name=flask_login.current_user.id, message="Here's your profile", top_users = top_user_list, top_tags= top_tag_list)
 
 #begin photo uploading code
 # photos uploaded using base64 encoding so they can be directly embeded in HTML
@@ -611,7 +624,16 @@ def recommended_photos():
 	pictures_list = Counter(cursor.fetchall())
 
 	sorted_pictures = sorted(pictures_list.items(), key=lambda x:x[1], reverse=True)
-	return sorted_pictures
+	completed_tuples = []
+
+
+	for picture in sorted_pictures:
+		cursor = conn.cursor()
+		cursor.execute("SELECT fname, lname FROM Users INNER JOIN Pictures ON Pictures.user_id = Users.user_id WHERE Pictures.picture_id = '{0}'".format(picture[0][1]))
+		poster = cursor.fetchall()[0]
+		completed_tuples.append((picture[0][0], picture[0][1], picture[0][2], poster))
+
+	return completed_tuples
 
 
 def recommended_friends():

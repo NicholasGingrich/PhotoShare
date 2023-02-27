@@ -1,4 +1,7 @@
 <body>
+    <head>
+        <link rel="stylesheet" href="{{ url_for('static', filename='photos.css') }}">
+    </head>
     <h1>My Photos:</h1>
     <form method="post" action="{{ url_for('filter_my_photos_by_tag') }}">
         <label for="filterMineTag"> Filter by Tag: </label>
@@ -12,7 +15,7 @@
     {% if photos %}
         <ul>
         {% for photo in photos %}
-            <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/> 
+            <li class="photos"> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/> 
             <form action="{{ url_for('delete_photo', photo_id = photo[1]) }}" method=post>
                 <input type=submit value=Delete>
             </form>
@@ -22,7 +25,14 @@
         </ul>
     {% endif %}
 </body>
-<ul>
-    <li><a href='/upload'>Upload a photo</a> </li>
-    <li><a href='/'>Home</a></li>
-</ul>
+<footer> 
+    <ul class="footer">
+        <li class="footer"><a href='/upload'>Upload a photo</a> </li>
+        <li class="footer"><a href='/feed'>My Feed</a> </li>
+        <li class="footer"><a href='/albums'>My Albums</a> </li>
+        <li class="footer"><a href='/friends'>Friends</a></li>
+        <li class="footer"><a href='/recommendations'>Recommendations</a></li>
+        <li class="footer"><a href='/logout'>Logout</a></li>
+        <li class="footer"><a href='/'>Home</a></li>
+    </ul>
+</footer>

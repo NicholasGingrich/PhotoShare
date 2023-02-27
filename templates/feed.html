@@ -1,6 +1,9 @@
+<head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='feed.css') }}">
+</head>
 <body>
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <h1>See what others are posting:</h1>
+    <h1>See What Others Are Posting</h1>
     {% if photos %}
         <form method="post" action="{{ url_for('filter_by_album') }}">
             <label for="filterAlbum"> Filter by Album: </label>
@@ -27,10 +30,11 @@
         </form>
             <ul>
             {% for photo in photos %}
-                <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/>  
+                <li class="whiteli"><b> Artist: </b> {{photo[7][0]}} {{photo[7][1]}} <br>
+                 <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/>  
                 <br>
-                    <a href={{url_for('like_photo', photo_id = photo[1]) }} style="text-decoration:none"> Likes: {{photo[3]}}</a>
-                <br>
+                    <a href={{url_for('like_photo', photo_id = photo[1]) }} style="text-decoration:none"> Likes: {{photo[3]}}</a> </li> 
+                
                     <label for="viewLikes"> See who liked this photo: </label>
                     <select name="viewLikes">
                         {% for item in photo[4] %}
@@ -38,11 +42,13 @@
                         {% endfor %}
                     </select>
                 <br>
-                <b> Caption: </b> {{photo[2]}} </li> 
+                <b> Caption: </b> {{photo[2]}}
+                <br>
                 <b> Tags: </b>
                     {% for item in photo[6] %}
                        {{item[0]}} 
                     {% endfor %}
+                <br>
                 <br>
                 <b> Comments: </b>
                 <br>
@@ -53,8 +59,7 @@
                 <br>
                 <ul>
                     {% for comment in photo[5] %}
-                        <li><b>{{comment[0]}}:</b> {{comment[1]}}</li>
-                        <br>
+                        <li class="display-comments"><b>{{comment[0]}}:</b> {{comment[1]}}</li>
                     {% endfor %}
                 </ul>
             {% endfor %}
@@ -81,7 +86,14 @@
 
 </body>
 
-<ul>
-    <li><a href='/upload'>Upload a photo</a> </li>
-    <li><a href='/'>Home</a></li>
-</ul>
+<footer> 
+    <ul class="footer">
+        <li><a href='/upload'>Upload a photo</a> </li>
+        <li><a href='/photos'>My Photos</a> </li>
+        <li><a href='/albums'>My Albums</a> </li>
+        <li><a href='/friends'>Friends</a></li>
+        <li><a href='/recommendations'>Recommendations</a></li>
+        <li><a href='/logout'>Logout</a></li>
+        <li><a href='/'>Home</a></li>
+    </ul>
+</footer>

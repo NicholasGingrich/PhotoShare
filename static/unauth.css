@@ -1,0 +1,47 @@
+body {
+    background-color: #FAE5D3;
+    color: #333;
+    font-family: Arial, sans-serif;
+  }
+  
+  h1, h4 {
+    color: #333;
+    text-align: center;
+  }
+  
+  a {
+    color: blue;
+    text-decoration: none;
+  }
+  
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  ul.footer{
+    margin-top: 550px;
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+footer {
+    background-color: #FAE5D3;
+}
+  
+  ul.footer li {
+    margin: 0 10px;
+  }
+  
+  footer a {
+    color: blue;
+  }
+  
+  footer a:hover {
+    text-decoration: underline;
+  }
+  

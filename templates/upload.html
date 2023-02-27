@@ -1,11 +1,11 @@
 <!-- author ben lawson (balawson@bu.edu) -->
 <head>
     <title>Upload a photo!</title>
-    <link rel="stylesheet" type="text/css" href="upload.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='upload.css') }}">
 </head>
     <body>
         <div class="title">
-            <h1>Upload a photo to Photoshare</h1>
+            <h1>Upload a Photo to Photoshare</h1>
         </div>
             <form method="post" enctype="multipart/form-data" action="/upload">
                 <label for="photo">Select photo:</label>
@@ -30,7 +30,15 @@
                 <br>
                 <input type="submit" value="Upload" />
             </form>
-            <a href='/'>Home</a>
+            <ul>
+                <li><a href='/'>Home</a></li>
+                <li><a href='/feed'>My Feed</a> </li>
+                <li><a href='/photos'>My Photos</a> </li>
+                <li><a href='/albums'>My Albums</a> </li>
+                <li><a href='/friends'>Friends</a></li>
+                <li><a href='/recommendations'>Recommendations</a></li>
+                <li><a href='/logout'>Logout</a></li>
+            </ul>
     </body>
 
    

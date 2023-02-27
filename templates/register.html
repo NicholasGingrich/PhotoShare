@@ -1,13 +1,14 @@
 <!-- author ben lawson balawson@bu.edu -->
 <head>
     <title>Create an account!</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='register.css') }}">
 </head>
 {%if not supress%}
 <h1> Email already in use! Use another one or <a href="/login">login</a></h1>
 {% endif %}
     <body>
         <div class="title">
-            <h1>Enter your information below</h1>
+            <h1>Enter Your Information Below</h1>
         </div>
         <div id="content">
             <form method="post" action="{{ url_for('register_user') }}">
@@ -29,4 +30,8 @@
             </form>
          </div>
     </body>
-<a href='/'>Home</a>
+<footer>
+    <ul>
+        <a href='/'>Home</a>
+    </ul>
+</footer>

@@ -1,13 +1,17 @@
 <!-- author ben lawson (balawson@bu.edu) -->
 <!doctype html>
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='home.css') }}">
+</head>
 {% if message %}
-  <h4>{{message}}!</h4>
+  <h1>{{message}}!</h1>
 {% endif %}
 <title>Photoshare</title>
 {% if name %}
   <h1>Hello {{ name }}!</h1>
 {% endif %}
-
+<body>
+<div> 
 {% if top_users %}
   <h4>Here are todays top users:</h4>
   <ul>
@@ -16,7 +20,9 @@
     {% endfor %}
   </ul>
 {% endif %}
-
+</div>
+<br>
+<div>
 {% if top_tags %}
   <h4>Here are todays top tags:</h4>
   <ul>
@@ -25,20 +31,23 @@
     {% endfor %}
   </ul>
 {% endif %}
+</div>
+</body>
 
 {% if message is none %}
   <p>You should <a href='/login'>login!</a></p>
 {% else %}
-  <p> Go to <a href='/profile'>profile?</a></p>
+  <p> Go to <a href='/profile'>profile</a></p>
 {% endif %}
 
-<ul>
-<li><a href='/upload'>Upload a photo</a> </li>
-<li><a href='/feed'>My Feed</a> </li>
-<li><a href='/photos'>My Photos</a> </li>
-<li><a href='/albums'>My Albums</a> </li>
-<li><a href='/friends'>Friends</a></li>
-<li><a href='/recommendations'>Recommendations</a></li>
-<li><a href='/logout'>Logout</a></li>
-<li><a href='/'>Home</a></li>
-</ul>
+<footer> 
+  <ul class="footer">
+      <li><a href='/feed'>My Feed</a> </li>
+      <li><a href='/upload'>Upload a photo</a> </li>
+      <li><a href='/photos'>My Photos</a> </li>
+      <li><a href='/albums'>My Albums</a> </li>
+      <li><a href='/friends'>Friends</a></li>
+      <li><a href='/recommendations'>Recommendations</a></li>
+      <li><a href='/logout'>Logout</a></li>
+  </ul>
+</footer>

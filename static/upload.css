@@ -1,10 +1,12 @@
-/* Center the main content */
+/* Center the main content and align items to the center */
 body {
     display: flex;
     justify-content: center;
     align-items: center;
+    flex-direction: column;
     height: 100vh;
     font-family: Arial, sans-serif;
+    background-color: #FAE5D3 ;
 }
 
 /* Style the title */
@@ -15,9 +17,13 @@ body {
 
 h1 {
     font-size: 36px;
-    color: #333;
-    margin-top: 0;
+    color: #007bff;
+    margin-top: 10px;
     margin-bottom: 10px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    width: 100%;
 }
 
 /* Style the form */
@@ -28,6 +34,8 @@ form {
     border-radius: 10px;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
     background-color: #fff;
+    margin-top: 10px;
+    margin-bottom: 10px;
 }
 
 label {
@@ -72,8 +80,24 @@ input[type="submit"] {
 }
 
 a {
-    display: block;
-    margin-top: 20px;
+    display: inline-block;
+    margin: 0 10px;
     text-align: center;
     color: #007bff;
+    text-decoration: none;
+}
+
+ul {
+    margin-top: 20px;
+    list-style-type: none;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+li {
+    display: inline-block;
+    margin: 0 10px;
+    list-style-type: none;
 }

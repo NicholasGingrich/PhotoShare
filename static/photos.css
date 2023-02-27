@@ -1,0 +1,98 @@
+/* photos.css */
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #FAE5D3;
+}
+
+h1 {
+    color: #555;
+    font-size: 36px;
+    margin-bottom: 20px;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+label {
+    display: inline-block;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+select {
+    font-size: 16px;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #aaa;
+    margin-bottom: 20px;
+}
+
+input[type="submit"] {
+    background-color: #007bff;
+    border: none;
+    color: white;
+    padding: 10px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+
+li.photos {
+    background-color: #fff;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    padding: 10px;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+li img {
+    max-width: 100%;
+    height: auto;
+}
+
+li b {
+    color: #555;
+    font-size: 16px;
+}
+
+li form {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+}
+
+li form input[type="submit"] {
+    background-color: #f44336;
+    margin-top: 10px;
+}
+
+ul.footer{
+    margin-top: 20px;
+    list-style-type: none;
+    padding: 20;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+li.footer{
+    background-color: #FAE5D3;
+    padding: 10;
+}
+
+footer {
+    background-color: #FAE5D3;
+}

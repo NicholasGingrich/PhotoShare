@@ -19,11 +19,12 @@
         {% endfor %}
         <br>
         {% for photo in photos %}
-        <ul>
-            <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0][0]).decode("ascii") }}'/>  
-        </ul>
-        <b> Caption: </b> {{photo[0][2]}} </li>
-        <br>
+          <ul>
+            <b> Artist: </b> {{photo[3][0]}} {{photo[3][1]}}
+            <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/>  
+            </ul>
+            <b> Caption: </b> {{photo[2]}} </li>
+            <br>
         {% endfor %}
     </div>
 </body>
