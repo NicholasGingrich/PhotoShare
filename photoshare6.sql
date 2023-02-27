@@ -62,8 +62,8 @@ CREATE TABLE Tagged(
     picture_id INT,
     tag_id INT,
     PRIMARY KEY(picture_id, tag_id),
-    FOREIGN KEY (picture_id) REFERENCES Pictures(picture_id),
-    FOREIGN KEY (tag_id) REFERENCES Tags(tag_id)
+    FOREIGN KEY (picture_id) REFERENCES Pictures(picture_id) ON DELETE CASCADE,
+    FOREIGN KEY (tag_id) REFERENCES Tags(tag_id) ON DELETE CASCADE
 );
 
 CREATE TABLE Friendship(

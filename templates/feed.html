@@ -11,6 +11,20 @@
             </select>
             <input type=submit value=Filter>
         </form>
+        <form method="post" action="{{ url_for('filter_by_tag') }}">
+            <label for="filterTag"> Filter by Tag: </label>
+            <select name="filterTag">
+                {% for item in tags %}
+                    <option value = {{item[0]}}> {{item[0]}} </option>
+                {% endfor %}
+            </select>
+            <input type=submit value=Filter>
+        </form>
+        <form method="post" action="{{ url_for('search_by_tags') }}">
+            <label for="searchTags"> Search by Tags: </label>
+            <input type="text", name="searchTags">
+            <input type=submit value=Filter>
+        </form>
             <ul>
             {% for photo in photos %}
                 <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0]).decode("ascii") }}'/>  
@@ -25,13 +39,16 @@
                     </select>
                 <br>
                 <b> Caption: </b> {{photo[2]}} </li> 
+                <b> Tags: </b>
+                    {% for item in photo[6] %}
+                       {{item[0]}} 
+                    {% endfor %}
                 <br>
                 <b> Comments: </b>
                 <br>
                 <form method="post" action="{{ url_for('add_comment', photo_id = photo[1]) }}">
                     <input type="text" name="comment" />
                     <button type="submit">Add Comment</button>
-                    <!--<a href={{url_for('add_comment', photo_id = photo[1], comment_text = comment) }}> Comment</a> -->
                 </form>
                 <br>
                 <ul>

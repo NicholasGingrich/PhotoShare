@@ -9,10 +9,19 @@
 {% endif %}
 
 {% if top_users %}
-  <h4>Here are todays top users</h4>
+  <h4>Here are todays top users:</h4>
   <ul>
     {% for user in top_users %}
       <li><b>{{user[0]}} {{user[1]}}</b>, <b>Score: </b>{{user[2]}}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+
+{% if top_tags %}
+  <h4>Here are todays top tags:</h4>
+  <ul>
+    {% for tag in top_tags %}
+      <li><b>{{tag[0]}}</b>, <b>Frequency: </b>{{tag[1]}}</li>
     {% endfor %}
   </ul>
 {% endif %}

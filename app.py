@@ -15,7 +15,7 @@ from flaskext.mysql import MySQL
 import flask_login
 import mysql.connector
 from mysql.connector import errorcode
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 #for image uploading
 import os, base64
@@ -26,7 +26,7 @@ app.secret_key = 'super secret string'  # Change this!
 
 #These will need to be changed according to your creditionals
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = 'b0st0nuniv2023'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'Monkeybinder007'
 app.config['MYSQL_DATABASE_DB'] = 'photoshare6'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -213,7 +213,8 @@ def add_friend():
 def feed():
 	photos = feed_photos()
 	filter_albums = list_albums_public()
-	return render_template('feed.html', data = filter_albums, photos = photos, base64 = base64)
+	filter_tags = list_tags_public()
+	return render_template('feed.html', data = filter_albums, tags = filter_tags, photos = photos, base64 = base64)
 
 @app.route("/feed", methods=['GET'])
 def feed_photos():
@@ -229,7 +230,10 @@ def feed_photos():
 		cursor = conn.cursor()
 		cursor.execute("SELECT email, text FROM Comments INNER JOIN Users ON Users.user_id = Comments.user_id WHERE Comments.picture_id = '{0}'".format(tup[1]))
 		comments = cursor.fetchall()
-		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments))
+		cursor = conn.cursor()
+		cursor.execute("SELECT name FROM Tags JOIN Tagged ON Tags.tag_id = Tagged.tag_id WHERE picture_id = '{0}' ".format(tup[1]))
+		tags = cursor.fetchall()
+		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags))
 	return completed_tuples
 
 def list_albums_public():
@@ -251,7 +255,133 @@ def filter_by_album():
 
 	filter_albums = list_albums_public()
 
-	return render_template('feed.html', data = filter_albums, photos = filtered_photos, base64 = base64)
+	completed_tuples = []
+	for tup in filtered_photos:
+		cursor = conn.cursor()
+		cursor.execute("SELECT COUNT(user_id) FROM Likes WHERE Likes.picture_id = '{0}'".format(tup[1]))
+		likes = cursor.fetchall()[0][0]
+		likers = list_likers(tup[1])
+		cursor = conn.cursor()
+		cursor.execute("SELECT email, text FROM Comments INNER JOIN Users ON Users.user_id = Comments.user_id WHERE Comments.picture_id = '{0}'".format(tup[1]))
+		comments = cursor.fetchall()
+		cursor = conn.cursor()
+		cursor.execute("SELECT name FROM Tags JOIN Tagged ON Tags.tag_id = Tagged.tag_id WHERE picture_id = '{0}' ".format(tup[1]))
+		tags = cursor.fetchall()
+		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags))
+
+
+	return render_template('feed.html', data = filter_albums, photos = completed_tuples, base64 = base64)
+
+@app.route("/filter_by_tag", methods=['POST'])
+def filter_by_tag():
+	tag = request.form.get('filterTag')
+	cursor = conn.cursor()
+	cursor.execute("SELECT tag_id FROM Tags WHERE Tags.name = '{0}'".format(tag))
+	tid = cursor.fetchall()[0][0]
+
+	cursor = conn.cursor()
+	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures JOIN Tagged ON Pictures.picture_id = Tagged.picture_id WHERE Tagged.tag_id = '{0}'".format(tid))
+	filtered_photos = cursor.fetchall()
+
+	filter_tags = list_tags_public()
+
+	completed_tuples = []
+	for tup in filtered_photos:
+		cursor = conn.cursor()
+		cursor.execute("SELECT COUNT(user_id) FROM Likes WHERE Likes.picture_id = '{0}'".format(tup[1]))
+		likes = cursor.fetchall()[0][0]
+		likers = list_likers(tup[1])
+		cursor = conn.cursor()
+		cursor.execute("SELECT email, text FROM Comments INNER JOIN Users ON Users.user_id = Comments.user_id WHERE Comments.picture_id = '{0}'".format(tup[1]))
+		comments = cursor.fetchall()
+		cursor = conn.cursor()
+		cursor.execute("SELECT name FROM Tags JOIN Tagged ON Tags.tag_id = Tagged.tag_id WHERE picture_id = '{0}' ".format(tup[1]))
+		tags = cursor.fetchall()
+		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags))
+
+	return render_template('feed.html', tags = filter_tags, photos = completed_tuples, base64=base64)
+
+@app.route('/filter_my_photos_by_tag', methods=['POST'])
+@flask_login.login_required
+def filter_my_photos_by_tag():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	tag = request.form.get('filterMineTag')
+	cursor = conn.cursor()
+	cursor.execute("SELECT tag_id FROM Tags WHERE Tags.name = '{0}'".format(tag))
+	tid = cursor.fetchall()[0][0]
+
+	cursor = conn.cursor()
+	cursor.execute("SELECT imgdata, Tagged.picture_id, caption FROM Pictures JOIN Tagged ON Pictures.picture_id = Tagged.picture_id WHERE Tagged.tag_id = '{0}' AND Pictures.user_id = '{1}'".format(tid, uid))
+	filtered_photos = cursor.fetchall()
+
+	filter_tags = list_tags_private()
+
+	return render_template('photos.html', tags = filter_tags, photos = filtered_photos, base64=base64)
+
+
+
+def list_tags_private():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	cursor = conn.cursor()
+	cursor.execute("SELECT Tags.name FROM Tags INNER JOIN Tagged ON Tags.tag_id = Tagged.tag_id INNER JOIN Pictures ON Pictures.picture_id = Tagged.picture_id WHERE Pictures.user_id = '{0}'".format(uid))
+	tagList = cursor.fetchall()
+	return tagList
+
+
+def list_tags_public():
+	cursor = conn.cursor()
+	cursor.execute("SELECT name FROM Tags")
+	tagList = cursor.fetchall()
+	return tagList
+
+@app.route("/search_by_tags", methods=['POST'])
+def search_by_tags():
+	tags = request.form.get("searchTags")
+	tag_list = tags.split()
+	tags = [f"{tag}" for tag in tag_list]
+	num_tags = len(tags)
+	picture_id_list = []
+
+	for tag in tags:
+		tag_id = getTagID(tag)
+		cursor = conn.cursor()
+		cursor.execute("SELECT picture_id FROM Tagged WHERE Tagged.tag_id = '{0}'".format(tag_id))
+		picture_id_list += cursor.fetchall()
+	
+	count_pic_dict = Counter(picture_id_list)
+	pid_list = []
+	for (key, value) in count_pic_dict.items():
+		if value == num_tags:
+			pid_list.append(key)
+
+	filtered_photos = []
+	for pid in pid_list:
+		cursor = conn.cursor()
+		cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures WHERE Pictures.picture_id = '{0}'".format(pid[0]))
+		filtered_photos += cursor.fetchall()
+
+	filter_albums = list_albums_public()
+	filter_tags = list_tags_public()
+
+	completed_tuples = []
+	for tup in filtered_photos:
+		cursor = conn.cursor()
+		cursor.execute("SELECT COUNT(user_id) FROM Likes WHERE Likes.picture_id = '{0}'".format(tup[1]))
+		likes = cursor.fetchall()[0][0]
+		likers = list_likers(tup[1])
+		cursor = conn.cursor()
+		cursor.execute("SELECT email, text FROM Comments INNER JOIN Users ON Users.user_id = Comments.user_id WHERE Comments.picture_id = '{0}'".format(tup[1]))
+		comments = cursor.fetchall()
+		cursor = conn.cursor()
+		cursor.execute("SELECT name FROM Tags JOIN Tagged ON Tags.tag_id = Tagged.tag_id WHERE picture_id = '{0}' ".format(tup[1]))
+		tags = cursor.fetchall()
+		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags))
+
+	return render_template('feed.html', data = filter_albums, tags = filter_tags, photos = completed_tuples, base64 = base64)
+
+
+
+
 
 @app.route("/feed/<photo_id>", methods=['GET', 'POST'])
 @flask_login.login_required
@@ -312,11 +442,41 @@ def upload_file():
 		cursor = conn.cursor()
 		cursor.execute('''INSERT INTO Pictures (imgdata, user_id, caption, album_id) VALUES (%s, %s, %s, %s)''', (photo_data, uid, caption, aid))
 		conn.commit()
+		#get picture id to use for Tagged
+		cursor = conn.cursor()
+		cursor.execute("SELECT MAX(picture_id) FROM Pictures")
+		pid = cursor.fetchall()[0][0]
+
+		#code for adding tags
+		tags = request.form.get('tags')
+		tag_list = tags.split()
+		tags = [f"{tag}" for tag in tag_list]
+		for tag in tags:
+			tag_id = getTagID(tag)
+			#add tag to Tags 
+			#check if tag is already in Tags
+			cursor = conn.cursor()
+			cursor.execute("SELECT * FROM Tags WHERE Tags.tag_id = '{0}'".format(tag_id))
+			if not cursor.fetchone():
+				cursor = conn.cursor()
+				cursor.execute("INSERT INTO Tags (tag_id, name) VALUES ('{0}', '{1}')".format(tag_id, tag))
+				conn.commit()
+			#add tag to Tagged
+			cursor = conn.cursor()
+			cursor.execute("INSERT INTO Tagged (tag_id, picture_id) VALUES ('{0}', '{1}')".format(tag_id, pid))
+			conn.commit()
+
 		return render_template('photos.html', name=flask_login.current_user.id, message='Photo uploaded!', photos=getUsersPhotos(uid), base64=base64)
 	#The method is GET so we return a  HTML form to upload the a photo.
 	else:
 		albums = list_albums()
 		return render_template('upload.html', data = albums, supress='True')
+
+def getTagID(st):
+	ID = 0
+	for c in st:
+		ID += ord(c)
+	return ID
 
 def list_albums():
 	uid = getUserIdFromEmail(flask_login.current_user.id)
@@ -333,16 +493,33 @@ def list_albums():
 def photos(): 
 	uid = getUserIdFromEmail(flask_login.current_user.id)
 	photos = getUsersPhotos(uid)
-	return render_template('photos.html', photos = photos, supress='True', base64=base64)
+	tags = list_tags_private()
+	return render_template('photos.html', photos = photos, tags = tags, supress='True', base64=base64)
 
 @app.route('/photos/<photo_id>', methods=['POST'])
 @flask_login.login_required
 def delete_photo(photo_id): 
 	uid = getUserIdFromEmail(flask_login.current_user.id)
+
+	cursor = conn.cursor()
+	cursor.execute("SELECT tag_id FROM Tagged WHERE Tagged.picture_id = '{0}'".format(photo_id))
+	tag_id_list = cursor.fetchall()
+	
+
 	cursor = conn.cursor()
 	cursor.execute("DELETE FROM Pictures WHERE picture_id= '{0}'".format(photo_id))
 	conn.commit()
-	return render_template('photos.html', photos = getUsersPhotos(uid), supress='True')
+
+	for tag_id in tag_id_list:
+		cursor = conn.cursor()
+		cursor.execute("SELECT tag_id from Tagged WHERE Tagged.tag_id = '{0}'".format(tag_id[0]))
+		tag_check = cursor.fetchall()
+		if len(tag_check) == 0:
+			cursor = conn.cursor()
+			cursor.execute("DELETE FROM Tags WHERE Tags.tag_id = '{0}'".format(tag_id[0]))
+			conn.commit()
+
+	return render_template('photos.html', photos = getUsersPhotos(uid), supress='True', base64=base64)
 #end photo code
 
 
@@ -398,7 +575,43 @@ def manage_albums():
 @flask_login.login_required
 def recommendations():
 	friend_recs = recommended_friends()
-	return render_template('recommendations.html', data = friend_recs, supress='True')
+	photo_recs = recommended_photos()
+	return render_template('recommendations.html', photos = photo_recs, data = friend_recs, supress='True', base64=base64)
+
+def recommended_photos():
+	uid = getUserIdFromEmail(flask_login.current_user.id)
+	cursor = conn.cursor()
+	cursor.execute('''SELECT Tags.name, COUNT(Tagged.tag_id) 
+	AS frequency 
+	FROM Tags 
+	INNER JOIN Tagged ON Tags.tag_id = Tagged.tag_id 
+	INNER JOIN Pictures ON Pictures.picture_id = Tagged.picture_id 
+	WHERE Pictures.user_id = '{0}'
+	GROUP BY Tagged.tag_id 
+	ORDER BY frequency DESC 
+	LIMIT 3'''.format(uid))
+	top_user_tags = cursor.fetchall()
+
+	tag_id_list = []
+	for tag in top_user_tags:
+		cursor = conn.cursor()
+		cursor.execute("SELECT Tagged.tag_id FROM Tagged JOIN Tags ON Tagged.tag_id = Tags.tag_id WHERE Tags.name ='{0}'".format(tag[0]))
+		tag_id_list.append(cursor.fetchall()[0][0])
+	
+
+	cursor = conn.cursor()
+	cursor.execute('''SELECT imgdata, Pictures.picture_id, caption FROM
+	Pictures INNER JOIN Tagged
+	ON Pictures.picture_id = Tagged.picture_id
+	WHERE (Tagged.tag_id = '{0}' 
+	OR Tagged.tag_id = '{1}' 
+	OR Tagged.tag_id = '{2}')
+	AND Pictures.user_id <> '{3}'
+	'''.format(tag_id_list[0], tag_id_list[1], tag_id_list[2], uid))
+	pictures_list = Counter(cursor.fetchall())
+
+	sorted_pictures = sorted(pictures_list.items(), key=lambda x:x[1], reverse=True)
+	return sorted_pictures
 
 
 def recommended_friends():
@@ -475,11 +688,25 @@ def get_top_ten_users():
 	''')
 	return cursor.fetchall()
 
+def get_top_three_tags():
+	cursor = conn.cursor()
+	cursor.execute('''SELECT Tags.name, COUNT(Tagged.tag_id) 
+	AS frequency 
+	FROM Tags INNER JOIN Tagged ON Tags.tag_id = Tagged.tag_id 
+	GROUP BY Tagged.tag_id 
+	ORDER BY frequency DESC 
+	LIMIT 3''')
+	return cursor.fetchall()
+
+
+
+
 #default page
 @app.route("/", methods=['GET'])
 def home():
 	top_user_list = get_top_ten_users()
-	return render_template('home.html', message='Welecome to Photoshare', top_users = top_user_list)
+	top_tags_list = get_top_three_tags()
+	return render_template('home.html', message='Welecome to Photoshare', top_users = top_user_list, top_tags = top_tags_list)
 
 
 if __name__ == "__main__":

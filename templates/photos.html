@@ -1,5 +1,14 @@
 <body>
     <h1>My Photos:</h1>
+    <form method="post" action="{{ url_for('filter_my_photos_by_tag') }}">
+        <label for="filterMineTag"> Filter by Tag: </label>
+        <select name="filterMineTag">
+            {% for item in tags %}
+                <option value = {{item[0]}}> {{item[0]}} </option>
+            {% endfor %}
+        </select>
+        <input type=submit value=Filter>
+    </form>
     {% if photos %}
         <ul>
         {% for photo in photos %}

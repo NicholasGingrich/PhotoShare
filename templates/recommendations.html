@@ -3,7 +3,7 @@
 </head>
 <h2>People you may know:</h2>
 <body>
-    <div id="friend_recommendations" action="{{ url_for('recommendations') }}" >
+    <div id="recommendations" action="{{ url_for('recommendations') }}" >
         {% for item in data %}
         <tr>
             <td>{{item[0]}}</td>
@@ -15,6 +15,14 @@
             </form>
             <br>
         </tr>
+        <br>
+        {% endfor %}
+        <br>
+        {% for photo in photos %}
+        <ul>
+            <li> <img src='data:image/jpg;base64, {{ base64.b64encode(photo[0][0]).decode("ascii") }}'/>  
+        </ul>
+        <b> Caption: </b> {{photo[0][2]}} </li>
         <br>
         {% endfor %}
     </div>
