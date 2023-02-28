@@ -1,5 +1,6 @@
 <head>
     <title>Create a new photo album:</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='albums.css') }}">
 </head>
     <body>
             <form method="post" action="{{ url_for('manage_albums') }}">
@@ -8,6 +9,7 @@
                     
                         <label for="albumName">Name of your new album:</label>
                         <input type="albumName" name="albumName" /><br />
+                        <br>
                         <input type="submit" name="btn" value="Create">
                 </div>
                 <div id="delete album">
@@ -19,6 +21,7 @@
                             {% endfor %}
                         </select>
                         <br>
+                        <br>
                         <input type="submit" name="btn" value="Delete">
                 </div>
             </form>
@@ -28,9 +31,16 @@
         {% if message %}
         <h4>{{message}}!</h4>
         {% endif %}
-        <br>
-        <br>
-        <a href='/upload'>Upload Photos</a>
-        <br>
-        <a href='/'>Home</a>
     </body>
+
+<footer> 
+    <ul class="footer">
+        <li><a href='/feed'>My Feed</a> </li>
+        <li><a href='/upload'>Upload a photo</a> </li>
+        <li><a href='/photos'>My Photos</a> </li>
+        <li><a href='/friends'>Friends</a></li>
+        <li><a href='/recommendations'>Recommendations</a></li>
+        <li><a href='/logout'>Logout</a></li>
+        <li><a href='/'>Home</a></li>
+    </ul>
+</footer>

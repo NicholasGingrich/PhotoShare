@@ -274,9 +274,11 @@ def filter_by_album():
 		cursor.execute("SELECT name FROM Tags JOIN Tagged ON Tags.tag_id = Tagged.tag_id WHERE picture_id = '{0}' ".format(tup[1]))
 		tags = cursor.fetchall()
 		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags, poster))
+	
+	filter_tags = list_tags_public()
 
 
-	return render_template('feed.html', data = filter_albums, photos = completed_tuples, base64 = base64)
+	return render_template('feed.html', data = filter_albums, photos = completed_tuples, tags = filter_tags, base64 = base64)
 
 @app.route("/filter_by_tag", methods=['POST'])
 def filter_by_tag():
@@ -286,7 +288,7 @@ def filter_by_tag():
 	tid = cursor.fetchall()[0][0]
 
 	cursor = conn.cursor()
-	cursor.execute("SELECT imgdata, picture_id, caption FROM Pictures JOIN Tagged ON Pictures.picture_id = Tagged.picture_id WHERE Tagged.tag_id = '{0}'".format(tid))
+	cursor.execute("SELECT imgdata, Pictures.picture_id, caption FROM Pictures JOIN Tagged ON Pictures.picture_id = Tagged.picture_id WHERE Tagged.tag_id = '{0}'".format(tid))
 	filtered_photos = cursor.fetchall()
 
 	filter_tags = list_tags_public()
@@ -308,7 +310,9 @@ def filter_by_tag():
 		tags = cursor.fetchall()
 		completed_tuples.append((tup[0], tup[1], tup[2], likes, likers, comments, tags, poster))
 
-	return render_template('feed.html', tags = filter_tags, photos = completed_tuples, base64=base64)
+	public_albums = list_albums_public()
+
+	return render_template('feed.html', data=public_albums, tags = filter_tags, photos = completed_tuples, base64=base64)
 
 @app.route('/filter_my_photos_by_tag', methods=['POST'])
 @flask_login.login_required
@@ -706,7 +710,8 @@ def get_top_ten_users():
 	FROM Users
 	LEFT JOIN Pictures ON Users.user_id = Pictures.user_id
 	GROUP BY Users.user_id
-	ORDER BY user_score DESC;
+	ORDER BY user_score DESC
+	LIMIT 3;
 	''')
 	return cursor.fetchall()
 
@@ -719,8 +724,6 @@ def get_top_three_tags():
 	ORDER BY frequency DESC 
 	LIMIT 3''')
 	return cursor.fetchall()
-
-
 
 
 #default page

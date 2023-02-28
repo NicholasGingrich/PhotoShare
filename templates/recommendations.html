@@ -1,9 +1,10 @@
 <head>
-    <title>Recommendations</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='recommendations.css') }}">
 </head>
-<h2>People you may know:</h2>
+<h1>Recommendations</h1>
 <body>
     <div id="recommendations" action="{{ url_for('recommendations') }}" >
+        <h2>People you may know:</h2>
         {% for item in data %}
         <tr>
             <td>{{item[0]}}</td>
@@ -18,6 +19,7 @@
         <br>
         {% endfor %}
         <br>
+        <h2>Photos you may like:</h2>
         {% for photo in photos %}
           <ul>
             <b> Artist: </b> {{photo[3][0]}} {{photo[3][1]}}
@@ -29,4 +31,14 @@
     </div>
 </body>
 
-<a href='/'>Home</a>
+<footer> 
+    <ul class="footer">
+        <li class="footer"><a href='/upload'>Upload a photo</a> </li>
+        <li class="footer"><a href='/feed'>My Feed</a> </li>
+        <li class="footer"><a href='/photos'>My Photos</a></li>
+        <li class="footer"><a href='/albums'>My Albums</a> </li>
+        <li class="footer"><a href='/friends'>Friends</a></li>
+        <li class="footer"><a href='/logout'>Logout</a></li>
+        <li class="footer"><a href='/'>Home</a></li>
+    </ul>
+</footer>

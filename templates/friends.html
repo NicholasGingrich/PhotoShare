@@ -1,25 +1,40 @@
 <head>
     <title>Friends</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='friends.css') }}">
 </head>
-<h2>Add Friends:</h2>
+    
 <body>
-    <div id="add friends">
-        <form method="post" action="{{ url_for('add_friend') }}">
-            <label for="addfriend">Type in their email:</label>
-            <input type="addfriend" name="addfriend" /><br />
-            <input type="submit" />
-        </form>
-     </div>
+    <h2>Add Friends:</h2>
+        <div class="add_friends">
+            <form method="post" action="{{ url_for('add_friend') }}">
+                <label for="addfriend">Type in their email:</label>
+                <input type="addfriend" name="addfriend" />
+                <br>
+                <br>
+                <input type="submit" />
+            </form>
+        </div>
+    <h2>Your Friends:</h2>
+        <div class="my_friends" action="{{ url_for('friends') }}" >
+            {% for item in data %}
+            <tr>
+                <td>{{item[0]}}</td>
+                <td>{{item[1]}}</td>
+                <td>{{item[2]}}</td>
+            </tr>
+            <br>
+            {% endfor %}
+        </div>
 </body>
-<h2>Your Friends:</h2>
-    <div id="my_friends" action="{{ url_for('friends') }}" >
-        {% for item in data %}
-        <tr>
-            <td>{{item[0]}}</td>
-            <td>{{item[1]}}</td>
-            <td>{{item[2]}}</td>
-        </tr>
-        <br>
-        {% endfor %}
-    </div>
-<a href='/'>Home</a>
+
+<footer> 
+    <ul class="footer">
+        <li><a href='/feed'>My Feed</a> </li>
+        <li><a href='/upload'>Upload a photo</a> </li>
+        <li><a href='/photos'>My Photos</a> </li>
+        <li><a href='/albums'>My Albums</a></li>
+        <li><a href='/recommendations'>Recommendations</a></li>
+        <li><a href='/logout'>Logout</a></li>
+        <li><a href='/'>Home</a></li>
+    </ul>
+</footer>
